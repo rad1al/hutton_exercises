@@ -60,7 +60,7 @@ let2int c = ord c - ord 'a'
 int2let :: Int -> Char
 int2let n = chr (ord 'a' + n)
 
--- shift modified to handle upper-case letters.
+-- shift function modified to handle upper-case letters.
 shift :: Int -> Char -> Char
 shift n c | isLower c = int2let $ ((let2int c) + n) `mod` 26
           | isUpper c = int2let $ (((let2int c) + 32 + n) `mod` 26) - 32
