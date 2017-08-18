@@ -105,7 +105,13 @@ luhn a b c d | total `mod` 10 == 0 = True
                             + d
 
 
+{- 
 
+luhn 1 7 8 4 == True
+
+luhn 4 7 8 3 == False
+
+-}
 
 
 
