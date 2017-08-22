@@ -238,7 +238,7 @@ depth = 9
 {- 1. -}
 
 size_of_tree :: Tree Grid -> Int
-size_of_tree (Node x ts) | length ts == 0 = 1
+size_of_tree (Node _ ts) | length ts == 0 = 1
                          | otherwise = 1 + sum (map size_of_tree ts)
 
 {-
@@ -258,7 +258,20 @@ size_of_tree (Node x ts) | length ts == 0 = 1
 > size_of_tree (prune 10 (gametree empty O))
 549946
 
-The maximum depth of this tree must be 9 because after 9 moves, the board 
+
+
+-}
+
+find_depth :: Tree Grid -> Int
+find_depth (Node _ ts) | length ts == 0 = 0
+                       | otherwise = 1 + maximum (map find_depth ts)
+
+{-
+
+> find_depth $ gametree empty O
+9
+
+Note: the maximum depth of this tree must be 9 because after 9 moves, the board 
 will be full and no further moves are possible.
 
 -}
