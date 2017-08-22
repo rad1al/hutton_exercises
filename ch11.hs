@@ -449,7 +449,7 @@ main = do hSetBuffering stdout NoBuffering
 -- "Player O, enter your move: ERROR: Invalid number"
 -- Not exactly sure how to get rid of it.
 
--- b. allow the length of a winning line to also be changed
+-- b. allow the length of a winning line to also be changed.
     -- To be implemented.
 
 -- c. generate the game tree once, rather than for each move.
