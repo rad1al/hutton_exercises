@@ -3,7 +3,8 @@
 import Data.Char
 import Data.List
 import System.IO
-import System.Random (randomRIO) -- neded for exercise #2
+-- import System.Random (randomRIO) 
+import System.Random hiding (next) -- neded for exercise #2
 
 size :: Int
 size = 3
@@ -235,6 +236,44 @@ prune 1 (gametree empty O)
 depth :: Int
 depth = 9
 
+minimax :: Tree Grid -> Tree (Grid, Player)
+minimax (Node g [])
+    | wins O g  = Node (g,O) []
+    | wins X g  = Node (g,X) []
+    | otherwise = Node (g,B) []
+minimax (Node g ts)
+    | turn g == O = Node (g, minimum ps) ts'
+    | turn g == X = Node (g, maximum ps) ts'
+                    where
+                        ts' = map minimax ts
+                        ps  = [p | Node (_,p) _ <- ts']
+
+bestmove :: Grid -> Player -> Grid
+bestmove g p = head [g' | Node (g',p') _ <- ts, p' == best]
+               where
+                  tree = prune depth (gametree g p)
+                  Node (_, best) ts = minimax tree
+
+
+play' :: Grid -> Player -> IO ()
+play' g p | wins O g = putStrLn "Player O wins!\n"
+          | wins X g = putStrLn "Player X wins!\n"
+          | full g   = putStrLn "It's a draw!\n"
+          | p == O   = do i <- getNat (prompt p)
+                          case move g i p of
+                             [] -> do putStrLn "ERROR: Invalid move"
+                                      play' g p
+                             [g'] -> play g' (next p)
+          | p == X   = do putStr "Player X is thinking... "
+                          (play $! (bestmove g p)) (next p)
+
+play :: Grid -> Player -> IO ()
+play g p = do cls
+              goto (1,1)
+              putGrid g
+              play' g p
+
+
 {- 1. -}
 
 size_of_tree :: Tree Grid -> Int
@@ -295,14 +334,120 @@ will be full and no further moves are possible.
 
 -}
 
+-- a function that picks a random Int out of an list of Ints
+rand_int :: [Int] -> IO Int
+rand_int xs = do r <- randomRIO (0, length xs - 1)
+                 return (xs !! r)
+
+{-
+
+bestmove :: Grid -> Player -> Grid
+bestmove g p = head [g' | Node (g',p') _ <- ts, p' == best]
+               where
+                  tree = prune depth (gametree g p)
+                  Node (_, best) ts = minimax tree
+
+-}
+
+random_bestmove :: Grid -> Player -> IO Grid
+random_bestmove g p = do r <- randomRIO (0, length moves - 1)
+                         return (moves !! r)
+                      where  
+                         moves = [g' | Node (g',p') _ <- ts, p' == best]
+                         tree = prune depth (gametree g p)
+                         Node (_, best) ts = minimax tree
+
+
+bestmoves :: Grid -> Player -> [Grid]
+bestmoves g p = [g' | Node (g',p') _ <- ts, p' == best]
+                where
+                  tree = prune depth (gametree g p)
+                  Node (_, best) ts = minimax tree
+
+random_play :: Grid -> Player -> IO ()
+random_play g p = do cls
+                     goto (1,1)
+                     putGrid g
+                     random_play' g p
+
+random_play_alt :: Grid -> Player -> IO ()
+random_play_alt g p = do cls
+                         goto (1,1)
+                         putGrid g
+                         random_play_alt' g p
+
+{-
+
+The operator $! forces evaluation of the best move for the computer player 
+prior to the function play being invoked again, without which there may be
+a delay between clearing the screen and displaying the grid in player while
+the best move was then calcualted under lazy evaluation.
+
+-}
+
+random_play' :: Grid -> Player -> IO ()
+random_play' g p | wins O g = putStrLn "Player O wins!\n"
+                 | wins X g = putStrLn "Player X wins!\n"
+                 | full g   = putStrLn "It's a draw!\n"
+                 | p == O   = do i <- getNat (prompt p)
+                                 case move g i p of
+                                    [] -> do putStrLn "ERROR: Invalid move"
+                                             random_play' g p
+                                    [g'] -> random_play g' (next p)
+                 | p == X   = do putStr "Player X is thinking... "
+                                 randomBestMove <- (random_bestmove g p)
+                                 (random_play $! randomBestMove) (next p)
+
+random_play_alt' :: Grid -> Player -> IO ()
+random_play_alt' g p | wins O g = putStrLn "Player O wins!\n"
+                     | wins X g = putStrLn "Player X wins!\n"
+                     | full g   = putStrLn "It's a draw!\n"
+                     | p == O   = do i <- getNat (prompt p)
+                                     case move g i p of
+                                        [] -> do putStrLn "ERROR: Invalid move"
+                                                 random_play_alt' g p
+                                        [g'] -> random_play_alt g' (next p)
+                     | p == X   = do putStr "Player X is thinking... "
+                                     let gs = bestmoves g p
+                                     n <- randomRIO (0, length gs-1)
+                                     random_play_alt (gs !! n) (next p)
+
+
+
 {- 3. -}
 -- To be implemented.
 
-{- 4. -}
--- To be implemented.
 
--- a. let the user decide if they wise to play first or second.
-    -- To be implemented.
+{- 4. -}
+
+-- a. let the user decide if they wish to play first or second.
+
+print_newline :: IO ()
+print_newline = putChar '\n'
+
+goFirstPrompt :: String -> IO ()
+goFirstPrompt prompt = do putStr prompt
+                          -- print_newline
+                          input <- getChar
+                          if input == 'y'
+                            then random_play_alt empty O
+                          else if input == 'n'
+                            then random_play_alt empty X
+                          else 
+                            do putStrLn "ERROR: Please only input 'y' or 'n'!"
+                               goFirstPrompt prompt
+
+-- main :: IO () -- Original implementation of main
+-- main = do hSetBuffering stdout NoBuffering
+--           play empty O
+
+main :: IO ()
+main = do hSetBuffering stdout NoBuffering
+          goFirstPrompt "Would you like to go first? (y/n): "
+
+-- Note: by choosing to go second, there is an extra error message at the beginning:
+-- "Player O, enter your move: ERROR: Invalid number"
+-- Not exactly sure how to get rid of it.
 
 -- b. allow the length of a winning line to also be changed
     -- To be implemented.
@@ -310,8 +455,14 @@ will be full and no further moves are possible.
 -- c. generate the game tree once, rather than for each move.
     -- To be implemented.
 
+entire_tree :: Player -> Tree Grid
+entire_tree O = gametree empty O
+entire_tree X = gametree empty X
+
 -- d. reduce the size of game tree using alpha-beta pruning.
     -- To be implemented.
+    -- Must look up "An Analysis of Alpha-Beta Pruning" by D.E. Knuth and R. W. Moore in 
+    -- Artificial intelligence, vol. 6, no. 4, 1975.
 
 
 
