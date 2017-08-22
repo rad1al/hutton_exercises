@@ -258,6 +258,17 @@ getCh = do hSetEcho stdin False
            hSetEcho stdin True
            return x
 
+{-
+
+Notes for readLine_helper:
+
+putChar '\b' will move the cursor back one space
+
+putChar ' ' will create a single blank space, overwriting
+the character in the original position.
+
+-}
+
 readLine_helper :: String -> IO String
 readLine_helper xs = do x <- getCh
                         if x == '\n' then
@@ -282,13 +293,6 @@ remove_char (x:xs) = init (x:xs)
 
 readLine :: IO String
 readLine = readLine_helper []
-
-
-
-
-
-
-
 
 
 
