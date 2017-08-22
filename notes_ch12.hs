@@ -1,5 +1,7 @@
 {- Chapter 12 :: Monads and more -}
 
+import Data.Char (isDigit, digitToInt)
+
 inc :: [Int] -> [Int]
 inc [] = []
 inc (n:ns) = n+1 : inc ns
@@ -313,6 +315,56 @@ x <*> (y <*> z) = (pure (.) <*> x <*> y) <*> z
 
 -}
 
+{------------------ Monads -------------------------
+
+From fubo on Reddit (https://www.reddit.com/r/explainlikeimfive/comments/kzw5j/eli5_monads_programming/c2omloo/):
+
+Monad is not a data type, like a floating-point number, or a list of records. Monad is a set of 
+algebraic properties that a data type can have. Saying that a data type "is a monad" (or, more 
+technically, "forms a monad") means saying that a data type follows a certain set of mathematical 
+equalities for some operations on that data type.
+
+Okay, what is an "algebraic property"? Well, here is an example: commutativity. We say that 
+multiplication of integers is "commutative" because for any integers X and Y, X·Y = Y·X. No matter 
+what the integers are, this equality is true. Associativity is another algebraic property, which means 
+that changing the grouping of operations doesn't change their effects: (A+B)+C is the same as A+(B+C).
+
+Commutativity and associativity are algebraic properties. As you can see from these examples, an 
+algebraic property depends on a type (such as integers) and an operation (such as adding or multiplying). 
+We say that the integers "commute over multiplication" (and addition, etc.) — but they do not commute over 
+subtraction: X–Y is not generally the same as Y–X.
+
+Some algebraic properties depend on more than one operation, for instance distributivity, which says that 
+A·(B+C) = A·B + A·C. We say that multiplication on the integers distributes over addition.
+
+Also, when a type has operations with various particular sets of algebraic properties, we sometimes call that 
+type by a special name, such as ring or group. Monad is a different set of algebraic properties. It means there 
+are certain operations, called bind and join and return, that work in a particular way. These operations are a 
+little more abstract than things like addition and multiplication. Monad doesn't say what these operations 
+actually do; it just says that they have to relate to each other in a particular fashion. I won't go into exactly 
+what these are, but basically return is about making new monadic values from non-monadic ones; join is about 
+collapsing nested groupings (kind of like associativity); and bind is about funneling values through functions. 
+There are certain equations that these operations have to meet; and if they do, then we can say that the type 
+is (or forms) a monad.
+
+It happens that a whole bunch of useful things turn out to fit the monad description. One of these is 
+"I/O operations" — which is a programmer way of saying, "those events in a computer program that interact with 
+an outside world, like your screen and keyboard, or the Internet". But there are lots of other monads. Lists 
+form a monad. Functions that return a result while reading from a stream of data, are a monad. Functions that 
+update a shared global state variable are a monad. And so on.
+
+...
+
+From functions on monads, it's possible to define imperative-style programming within pure-functional programming. 
+That's what the "do notation" in Haskell is.
+
+However, more generally, monads work with lazy evaluation to make it possible to fully describe a computation 
+separately from when you actually want it computed. For an example, take a look at Parsec, a monadic parser library, 
+which makes writing a parser almost as easy as writing down the grammar — and what you write is not merely a 
+specialized parser description language; it's actual code that can use the full power of Haskell.
+
+
+-}
 
 data Expr = Val Int | Div Expr Expr -- deriving Show
 
@@ -573,5 +625,91 @@ Node (Node (Leaf 0) (Leaf 1)) (Leaf 2)
 -}
 
 
+{------------------ Generic Functions ---------------
 
+mapM :: Monad m => (a -> m b) -> [a] -> m [b]
+mapM f [] = return []
+mapM f (x:xs) = do y <- f x
+                   ys <- mapM f xs
+                   return (y:ys)
+
+-}
+
+-- convert a digit character to its numeric value
+conv :: Char -> Maybe Int
+conv c | isDigit c = Just (digitToInt c)
+       | otherwise = Nothing
+
+{-
+
+> mapM conv "1234"
+Just [1,2,3,4]
+
+> mapM conv "123a"
+Nothing
+
+> map conv "1234"
+[Just 1,Just 2,Just 3,Just 4]
+
+
+> map conv "123a"
+[Just 1,Just 2,Just 3,Nothing]
+
+
+> :t mapM conv "123a"
+mapM conv "123a" :: Maybe [Int]
+
+> :t map conv "123a"
+map conv "123a" :: [Maybe Int]
+-}
+
+filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
+filterM p [] = return []
+filterM p (x:xs) = do b <- p x
+                      ys <- filterM p xs
+                      return (if b then x:ys else ys)
+
+
+{-
+
+-- Obtaining the powerset of a list with filterM:
+> filterM (\x -> [True, False]) [1,2,3]
+[[1,2,3],[1,2],[1,3],[1],[2,3],[2],[3],[]]
+
+-}
+
+-- concat generalised to an arbitrary monad:
+
+join :: Monad m => m (m a) -> m a
+join mmx = do mx <- mmx
+              x <- mx
+              return x 
+
+
+{-
+
+> join [[1,2],[3,4],[5,6]]
+[1,2,3,4,5,6]
+
+> join [[1,2]]
+[1,2]
+
+> join (Just (Just 1))
+Just 1
+
+> join (Just Nothing)
+Nothing
+
+> join Nothing
+Nothing
+
+------------------ Monad laws ------------------
+
+return x >>= f    = f x
+mx >>= return     = mx
+(mx >>= f) >>= g  = mx >>= (\x -> (f x >>= g))
+
+
+
+-}
 
