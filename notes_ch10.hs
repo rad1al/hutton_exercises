@@ -5,9 +5,6 @@
 Note: Whitespace seems to be important. Lines should 
 be vertically aligned with the word after the first 'do'.
 
-Already implemented in ghci:
-
-
 -}
 
 

@@ -7,6 +7,7 @@ symbol -- and extend to the end of the current line, which is represented by the
 character '\n'.
 
 -}
+-- To be implemented.
 
 {- 2. 
                                                                         
@@ -47,16 +48,21 @@ factor       factor          nat         nat         factor       factor
 -}
 
 {- 3. -}
+-- To be implemented.
 
 {- 4. -}
+-- To be implemented.
 
 {- 5. -}
+-- To be implemented.
 
 {- 6. -}
+-- To be implemented.
 
 {- 7. -}
+-- To be implemented.
 
 {- 8. -}
-
+-- To be implemented.
 
 

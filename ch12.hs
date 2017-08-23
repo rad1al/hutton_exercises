@@ -121,7 +121,7 @@ x <*> (y <*> z) = (pure (.) <*> x <*> y) <*> z
 
 {- 6. 
 
-instance Monad (a ->) gives error when trying to compile:
+instance Monad (a (->)) gives error when trying to compile:
 Illegal instance declaration for ‘Monad (a (->))’
 
 Not sure if correct:
