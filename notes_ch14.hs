@@ -372,12 +372,8 @@ concat = fold
 
 ------------------ Traversables -----------------------
 
--}
-
 class Functor f where
     fmap :: (a -> b) -> f a -> f b
-
-{-
 
 
 map :: (a -> b) -> [a] -> [b]
@@ -390,6 +386,10 @@ traverse g (x:xs) = pure (:) <*> g x <*> traverse g xs
 
 -}
 
+-- traverse' :: (a -> Maybe b) -> [a] -> Maybe [b]
+-- traverse' g [] = pure []
+-- traverse' g (x:xs) = pure (:) <*> g x <*> traverse' g xs
+
 dec :: Int -> Maybe Int
 dec n = if n > 0 then Just (n-1) else Nothing
 
@@ -398,10 +398,10 @@ dec n = if n > 0 then Just (n-1) else Nothing
 > dec 10
 Just 9
 
-> traverse dec [1,2,3]
+> traverse' dec [1,2,3]
 Just [0,1,2]
 
-> traverse dec [2,1,0]
+> traverse' dec [2,1,0]
 Nothing
 
 -------------------------------------------------------
@@ -409,8 +409,76 @@ Nothing
 class (Functor t, Foldable t) => Traversable t where
     traverse :: Applicative f => (a -> f b) -> t a ->  f (t b)
 
+instance Traversable [] where
+    -- traverse :: Applicative f => (a -> f b) -> [a] -> f [b]
+    traverse g []     = pure []
+    traverse g (x:xs) = pure (:) <*> g x <*> traverse g xs
+
+
+instance Traversable Tree where
+    -- traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
+    traverse g (Leaf x)   = pure Leaf <*> g x
+    traverse g (Node l r) = pure Node <*> traverse g l <*> traverse g r
 
 -}
+
+instance Functor Tree where
+    -- fmap :: (a -> b) -> Tree a -> Tree b
+    fmap g (Leaf x) = Leaf (g x)
+    fmap g (Node l r) = Node (fmap g l) (fmap g r)
+
+instance Traversable Tree where
+    -- traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
+    traverse g (Leaf x)   = pure Leaf <*> g x
+    traverse g (Node l r) = pure Node <*> traverse g l <*> traverse g r
+
+
+{-
+
+> traverse dec [1,2,3]
+Just [0,1,2]
+
+> traverse dec [2,1,0]
+Nothing
+
+> traverse dec (Node (Leaf 1) (Leaf 2))
+Just (Node (Leaf 0) (Leaf 1))
+
+> traverse dec (Node (Leaf 0) (Leaf 1))
+Nothing
+
+
+-------------------------------------------------------
+
+sequenceA :: Applicative f => t (f a) -> f (t a)
+sequenceA = traverse id
+
+The type expresses that sequenceA transform a data structure whose
+elements are applicative actions into a single such action that returns
+a data structure... For example, sequenceA can be used to transform
+a data structure whose elements may fail into a data structure that 
+may fail.
+
+> sequenceA [Just 1, Just 2, Just 3]
+Just [1,2,3]
+
+> sequenceA [Just 1, Nothing, Just 3]
+Nothing
+
+> sequenceA (Node (Leaf (Just 1)) (Leaf (Just 2)))
+Just (Node (Leaf 1) (Leaf 2))
+
+> sequenceA (Node (Leaf (Just 1)) (Leaf Nothing))
+Nothing
+
+-- traverse :: Applicaative f => (a -> f b) -> t a -> f (t b)
+traverse g = sequenceA . fmap g
+
+
+
+-}
+
+
 
 
 
