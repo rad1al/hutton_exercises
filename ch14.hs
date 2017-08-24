@@ -8,22 +8,22 @@ import Data.Foldable
 Commented out for 'Duplicate instance declarations'
 
 instance (Monoid a, Monoid b) => Monoid (a,b) where
-	-- mempty :: (a,b)
-	mempty = (mempty, mempty)
+    -- mempty :: (a,b)
+    mempty = (mempty, mempty)
 
-	-- mappend :: (a,b) -> (a,b) -> (a,b)
-	(x1,y1) `mappend` (x2,y2) = (x1 `mappend` x2, y1 `mappend` y2)
+    -- mappend :: (a,b) -> (a,b) -> (a,b)
+    (x1,y1) `mappend` (x2,y2) = (x1 `mappend` x2, y1 `mappend` y2)
 
 -}
 
 {- 2. 
 
 instance Monoid b => Monoid (a -> b) where
-	-- mempty :: (a,b)
-	mempty = |_ -> mempty
+    -- mempty :: (a,b)
+    mempty = |_ -> mempty
 
-	-- mappend :: (a,b) -> (a,b) -> (a,b)
-	f `mappend` g = x -> f x `mappend` g x 
+    -- mappend :: (a,b) -> (a,b) -> (a,b)
+    f `mappend` g = x -> f x `mappend` g x 
 
 
 -}
@@ -31,10 +31,8 @@ instance Monoid b => Monoid (a -> b) where
 {- 3. -}
 -- To be implemented.
 
-{- 4. -}
--- To be implemented.
 
-{- 5. -}
+{- 4. -}
 
 data Tree' a = Leaf' | Node' (Tree' a) a (Tree' a)
               deriving Show
@@ -62,22 +60,21 @@ instance Foldable Tree' where
 
     -- foldr :: (a -> b -> b) -> b -> Tree a -> b
     foldr f v (Leaf') = v
-    -- foldr f v (Node' l r) = foldr f (foldr f v r) l
     foldr f v (Node' l a r) = foldr f (f a (foldr f v r)) l
 
---     -- foldl :: (a -> b -> a) -> a -> Tree b -> a
---     foldl f v (Leaf x) = f v x
---     foldl f v (Node l r) = foldl f (foldl f v l) r
+    -- foldl :: (a -> b -> a) -> a -> Tree b -> a
+    foldl f v (Leaf') = v
+    foldl f v (Node' l a r) = foldl f (f (foldl f v l) a) r
 
--- instance Functor Tree where
---     -- fmap :: (a -> b) -> Tree a -> Tree b
---     fmap g (Leaf x) = Leaf (g x)
---     fmap g (Node l r) = Node (fmap g l) (fmap g r)
+instance Functor Tree' where
+    -- fmap :: (a -> b) -> Tree a -> Tree b
+    fmap g (Leaf') = Leaf'
+    fmap g (Node' l a r) = Node' (fmap g l) (g a) (fmap g r)
 
--- instance Traversable Tree where
---     -- traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
---     traverse g (Leaf x)   = pure Leaf <*> g x
---     traverse g (Node l r) = pure Node <*> traverse g l <*> traverse g r
+instance Traversable Tree' where
+    -- traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
+    traverse g (Leaf')   = pure Leaf'
+    traverse g (Node' l a r) = pure Node' <*> traverse g l <*> g a <*> traverse g r
 
 {-
 
@@ -87,7 +84,7 @@ instance Foldable Tree' where
 -}
 
 
-{- 6. -}
+{- 5. -}
 
 data Tree a = Leaf a | Node (Tree a) (Tree a)
               deriving Show
