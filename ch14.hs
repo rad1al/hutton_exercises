@@ -29,8 +29,10 @@ instance Monoid b => Monoid (a -> b) where
 -}
 
 {- 3. -}
+-- To be implemented.
 
 {- 4. -}
+-- To be implemented.
 
 {- 5. -}
 
@@ -58,9 +60,10 @@ instance Foldable Tree' where
     foldMap f (Leaf') = mempty
     foldMap f (Node' l a r) = foldMap f l `mappend` (f a) `mappend` foldMap f r
 
---     -- foldr :: (a -> b -> b) -> b -> Tree a -> b
---     foldr f v (Leaf x) = f x v
---     foldr f v (Node l r) = foldr f (foldr f v r) l
+    -- foldr :: (a -> b -> b) -> b -> Tree a -> b
+    foldr f v (Leaf') = v
+    -- foldr f v (Node' l r) = foldr f (foldr f v r) l
+    foldr f v (Node' l a r) = foldr f (f a (foldr f v r)) l
 
 --     -- foldl :: (a -> b -> a) -> a -> Tree b -> a
 --     foldl f v (Leaf x) = f v x
