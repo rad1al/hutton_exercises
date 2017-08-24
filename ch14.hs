@@ -28,8 +28,31 @@ instance Monoid b => Monoid (a -> b) where
 
 -}
 
-{- 3. -}
--- To be implemented.
+{- 3. 
+
+Not sure if this is correct:
+
+instance Foldable Maybe where
+    -- fold :: Monoid a => Maybe a -> a
+    fold = foldMap id
+    
+    -- foldMap :: Monoid b => (a -> b) -> Maybe a -> b
+    foldMap = maybe mempty
+
+    -- foldr :: (a -> b -> b) -> b -> Maybe a -> b
+    foldr _ v Nothing = v 
+    foldr f v (Just x) = f x v 
+
+    -- foldl :: (b -> a -> b) -> b -> Maybe a -> b
+    foldl _ v Nothing = v 
+    foldl f v (Just x) = f v x     
+
+instance Traversable Maybe where
+    -- traverse :: Applicative f => (a -> f b) -> Maybe a -> f (Maybe b)
+    traverse _ Nothing = pure Nothing
+    traverse f (Just x) = Just <$> f x
+
+-}
 
 
 {- 4. -}
@@ -54,25 +77,25 @@ instance Foldable Tree' where
     fold (Leaf') = mempty
     fold (Node' l a r) = fold l `mappend` fold r
 
-    -- foldMap :: Monoid b => (a -> b) -> Tree a -> b
+    -- foldMap :: Monoid b => (a -> b) -> Tree' a -> b
     foldMap f (Leaf') = mempty
     foldMap f (Node' l a r) = foldMap f l `mappend` (f a) `mappend` foldMap f r
 
-    -- foldr :: (a -> b -> b) -> b -> Tree a -> b
+    -- foldr :: (a -> b -> b) -> b -> Tree' a -> b
     foldr f v (Leaf') = v
     foldr f v (Node' l a r) = foldr f (f a (foldr f v r)) l
 
-    -- foldl :: (a -> b -> a) -> a -> Tree b -> a
+    -- foldl :: (a -> b -> a) -> a -> Tree' b -> a
     foldl f v (Leaf') = v
     foldl f v (Node' l a r) = foldl f (f (foldl f v l) a) r
 
 instance Functor Tree' where
-    -- fmap :: (a -> b) -> Tree a -> Tree b
+    -- fmap :: (a -> b) -> Tree' a -> Tree' b
     fmap g (Leaf') = Leaf'
     fmap g (Node' l a r) = Node' (fmap g l) (g a) (fmap g r)
 
 instance Traversable Tree' where
-    -- traverse :: Applicative f => (a -> f b) -> Tree a -> f (Tree b)
+    -- traverse :: Applicative f => (a -> f b) -> Tree' a -> f (Tree' b)
     traverse g (Leaf')   = pure Leaf'
     traverse g (Node' l a r) = pure Node' <*> traverse g l <*> g a <*> traverse g r
 
@@ -130,7 +153,6 @@ filterF f = filter f . toList
 
 > filterF (/= Just 2) (Node (Node (Leaf (Just 1)) (Leaf (Just 2))) (Leaf (Just 1)))
 [Just 1,Just 1]
-
 
 
 -}
