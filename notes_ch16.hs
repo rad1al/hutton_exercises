@@ -91,18 +91,65 @@ flatten (Leaf n) = [n]
 flatten (Node l r) = flatten l ++ flatten r
 
 
+flatten' :: Tree -> [Int] -> [Int]
+flatten' (Leaf n) ns = n : ns
+flatten' (Node l r) ns = flatten' l (flatten' r ns)
+
+flatten'' :: Tree -> [Int]
+flatten'' t = flatten' t []
+
+{-
+
+> flatten (Node (Leaf 1) (Leaf 2))
+[1,2]
+
+> flatten' (Leaf 1) []
+[1]
+
+> flatten'' (Node (Leaf 1) (Leaf 2))
+[1,2]
 
 
+-}
 
 
+data Expr = Val Int | Add Expr Expr deriving Show
+
+eval :: Expr -> Int
+eval (Val n) = n
+eval (Add x y) = eval x + eval y
+
+type Stack = [Int]
+type Code = [Op]
+
+data Op = PUSH Int | ADD deriving Show
+
+exec :: Code -> Stack -> Stack
+exec []           s        = s
+exec (PUSH n : c) s        = exec c (n : s)
+exec (ADD : c) (m : n : s) = exec c (n+m : s)
+
+comp :: Expr -> Code
+comp (Val n) = [PUSH n]
+comp (Add x y) = comp x ++ comp y ++ [ADD]
+
+e = Add (Add (Val 2) (Val 3)) (Val 4)
+
+{-
+
+> eval e
+9
+
+> comp e
+[PUSH 2,PUSH 3,ADD,PUSH 4,ADD]
+
+> exec (comp e) []
+[9]
 
 
+-}
 
-
-
-
-
-
-
-
+comp' :: Expr -> Code -> Code
+comp' (Val n) c = PUSH n : c
+comp' (Add x y) c = comp' x (comp' y (ADD : c))
 
