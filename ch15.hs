@@ -36,7 +36,7 @@ mult 3 4
 {- 4. -}
 
 fibs :: [Integer]
-fibs = [0,1] ++ map (\(x,y) -> x + y) (zip (fibs) (tail fibs))
+fibs = 0 : 1 : map (\(x,y) -> x + y) (zip (fibs) (tail fibs)) -- According to chapter 16, appending (++) is inefficient.
 
 {-
 
