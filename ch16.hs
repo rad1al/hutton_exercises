@@ -159,9 +159,25 @@ nodes (Node l r) + 1
 
 -}
 
-{- 7. -}
+{- 7. 
 
--- To be implemented later.
+instance Functor Maybe where
+    -- fmap :: (a -> b) -> Maybe a -> Maybe b
+    fmap _ Nothing = Nothing
+    fmap g (Just x) = Just (g x)
+
+
+fmap id (Just x)
+= Just (id x) -- preserves the identity function (fmap id = id)
+= Just x
+
+fmap (f . g) (Just x)
+= Just ((f . g) x)
+= Just (f (g x))
+= fmap f (Just (g x))
+= fmap f . fmap g (Just x) -- preserves function composition (fmap (g . h) = fmap g . fmap h)
+
+-}
 
 {- 8. -}
 
@@ -177,4 +193,67 @@ nodes (Node l r) + 1
 
 {- 11. -}
 
--- To be implemented later.
+data Expr = Val Int | Add Expr Expr deriving Show
+
+eval :: Expr -> Int
+eval (Val n) = n
+eval (Add x y) = eval x + eval y
+
+type Stack = [Int]
+type Code = [Op]
+
+data Op = PUSH Int | ADD deriving Show
+
+exec :: Code -> Stack -> Stack
+exec []           s        = s
+exec (PUSH n : c) s        = exec c (n : s)
+exec (ADD : c) (m : n : s) = exec c (n+m : s)
+
+comp :: Expr -> Code
+comp (Val n) = [PUSH n]
+comp (Add x y) = comp x ++ comp y ++ [ADD]
+
+e = Add (Add (Val 2) (Val 3)) (Val 4)
+
+comp' :: Expr -> Code -> Code
+comp' (Val n) c = PUSH n : c
+comp' (Add x y) c = comp' x (comp' y (ADD : c))
+
+
+{-
+
+Property:
+
+comp' e c = comp e ++ c
+
+Base case:
+
+comp' Val n c
+= comp' (Val n) ++ c -- applying comp' property 
+= [PUSH n] ++ c      -- applying comp
+= PUSH n : c
+
+Inductive step:
+
+comp' (Add x y) c
+= comp (Add x y) ++ c
+= (comp x ++ comp y ++ [ADD]) ++ c
+= comp x ++ (comp y ++ [ADD] ++ c) -- ++ is associative
+= comp' x (comp y ++ [ADD] ++ c) -- induction hypothesis for x
+= comp' x (comp y ++ ([ADD] ++ c))
+= comp' x (comp' y ([ADD] ++ c)) -- induction hypothesis for y
+= comp' x (comp' y (ADD : c))
+
+-}
+
+
+
+
+
+
+
+
+
+
+
+
