@@ -15,7 +15,3 @@ Code examples have been confirmed to run with:
 #### Honor Code
 
 Please remember to respect and abide by your educational institution's honor code!
-
-
-
-
