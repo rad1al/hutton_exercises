@@ -5,4 +5,4 @@
 !*.hs
 !*.md
 !LICENSE
-!papers/
+!papers/**
