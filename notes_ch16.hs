@@ -25,6 +25,10 @@ Succ Zero
 > add (Succ (Succ Zero)) (Succ (Succ (Succ Zero)))
 Succ (Succ (Succ (Succ (Succ Zero))))
 
+replicate :: Int -> a -> [a]
+replicate 0 = []
+replicate n x = x : replicate (n-1) x
+
 ------------------ Induction on lists -----------------
 
 reverse (reverse [])
