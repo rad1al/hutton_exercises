@@ -37,7 +37,7 @@ second xs = head (tail xs)
 :: [a] -> a
 
 swap (x,y) = (y,x)
-:: (t,t1) -> (t,t1)
+:: (t1,t) -> (t,t1)
 * tuples have their own type
 
 pair x y = (x,y)
