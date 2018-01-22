@@ -78,11 +78,6 @@ instance Applicative ZipList where
     (Z gs) <*> (Z xs) = Z [g x | (g,x) <- zip gs xs]
 
 
-
-
-
-
-
 {- 5. 
 
 
@@ -138,7 +133,61 @@ instance Monad ((->) a) where
 
 
 {- 7. -}
--- To be implemented.
+
+data Expr a = Var a | Val Int | Add (Expr a) (Expr a)
+    deriving Show
+
+instance Functor Expr where
+    -- fmap :: (a -> b) -> Expr a -> Expr b
+    fmap f (Var x)   = Var (f x)
+    fmap _ (Val x)   = Val x
+    fmap f (Add l r) = Add (fmap f l) (fmap f r)
+
+instance Applicative Expr where
+    -- pure :: a -> Expr a
+    pure = Var
+
+    -- (<*>) :: Expr (a -> b) -> Expr a -> Expr b
+    (<*>) (Var f) x = fmap f x
+    (<*>) _ (Val x) = Val x
+
+instance Monad Expr where
+    -- (>>=) :: Expr a -> (a -> Expr b) -> b
+    (>>=) (Var x) f = f x
+    (>>=) (Val x) _ = Val x
 
 {- 8. -}
--- To be implemented.
+
+type State = Int
+
+newtype ST a = S (State -> (a, State))
+
+app :: ST a -> State -> (a, State)
+app (S st) x = st x
+
+instance Functor ST where
+    -- fmap :: (a -> b) -> ST a -> ST b
+    -- fmap g st = S (\s -> let (x, s') = app st s in (g x, s'))
+    -- fmap g st = st >>= return . g
+    fmap g st = do s <- st
+                   return $ g s
+
+instance Applicative ST where
+    -- pure :: a -> ST a
+    pure x = S (\s -> (x,s)) 
+
+    -- (<*>) :: ST (a -> b) -> ST a -> ST b
+    -- stf <*> stx = S (\s -> 
+    --                 let (f,s') = app stf s
+    --                     (x,s'') = app stx s' in (f x, s''))
+    stf <*> stx = do f <- stf
+                     x <- stx
+                     return $ f x
+
+instance Monad ST where
+    -- (>>=) :: ST a -> (a -> ST b) -> ST b 
+    st >>= f = S (\s -> let (x,s') = app st s in app (f x) s')
+
+    -- return :: a -> ST a
+    -- return x = S (\s -> (x,s))
+
