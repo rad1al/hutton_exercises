@@ -2,8 +2,6 @@
 
 {- 1. -}
 
--- To be implemented later.
-
 data Expr = Val Int 
           | Add Expr Expr
           | Throw

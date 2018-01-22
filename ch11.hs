@@ -315,11 +315,7 @@ will be full and no further moves are possible.
 
 -}
 
-{- 2. -}
-
--- To be implemented.
-
-{-
+{- 2. 
 
 > randomRIO (0,4)
 0

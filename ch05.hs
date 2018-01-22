@@ -71,9 +71,3 @@ encode :: Int -> String -> String
 encode n xs = [shift n x | x <- xs]
 
 
-
-
-
-
-
-
