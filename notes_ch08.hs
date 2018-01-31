@@ -67,7 +67,11 @@ moves [North, East] (0,0)
 -}
 
 -- data Shape = Circle Float | Rect Float Float deriving
-data Shape = Circle Float | Rect Float Float deriving (Eq, Ord)
+data Shape = Circle Float | Rect Float Float deriving (Eq, Show)
+
+instance Ord Shape where
+   (Rect x y) <= (Rect m n) = area (Rect x y) <= area (Rect m n)
+   (Rect x y) > (Rect m n) = area (Rect x y) > area (Rect m n)
 
 square :: Float -> Shape
 square n = Rect n n
@@ -272,7 +276,8 @@ data Shape = Circle Float | Rect Float Float deriving Ord
 -}
 
 -- instance Ord Shape where
-    -- area (Rect x y) < area (Rect x y) = True
+--   (Rect x y) <= (Rect m n) = area (Rect x y) <= area (Rect m n)
+--   (Rect x y) > (Rect m n) = area (Rect x y) > area (Rect m n)
 
 
 {- 
@@ -371,9 +376,9 @@ bools n = map (False :) bss ++ map (True :) bss
             where bss = bools (n-1)
 
 -- Defined earlier in chapter 7
--- rmdupes :: Eq a => [a] -> [a]
--- rmdupes [] = []
--- rmdupes (x:xs) = x : rmdupes (filter (/= x) xs) 
+rmdupes :: Eq a => [a] -> [a]
+rmdupes [] = []
+rmdupes (x:xs) = x : rmdupes (filter (/= x) xs) 
 
 substs :: Prop -> [Subst]
 substs p = map (zip vs) (bools (length vs))
@@ -495,3 +500,4 @@ value' (Add (Add (Val 2) (Val 3)) (Val 4))
 = 9
 = 9
 
+-}
