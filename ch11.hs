@@ -280,6 +280,7 @@ size_of_tree :: Tree Grid -> Int
 size_of_tree (Node _ ts) | length ts == 0 = 1
                          | otherwise = 1 + sum (map size_of_tree ts)
 
+
 {-
 
 > size_of_tree (prune 0 (gametree empty O))
@@ -411,7 +412,38 @@ random_play_alt' g p | wins O g = putStrLn "Player O wins!\n"
 
 
 {- 3. -}
--- To be implemented.
+
+depth_of_tree :: Tree a -> Int
+depth_of_tree (Node _ []) = 0
+depth_of_tree (Node _ ts) = 1 + minimum (map depth_of_tree ts)
+
+fastest_move :: Grid -> Player -> Grid
+fastest_move g p = head [g' | Node (g', p') _ <- sortOn depth_of_tree ts, p' == best]
+                   where 
+                      tree              = prune depth (gametree g p)
+                      Node (_, best) ts = minimax tree
+
+play'' :: Grid -> Player -> IO ()
+play'' g p = do cls
+                goto (1, 1)
+                putGrid g
+                play''' g p
+
+play''' :: Grid -> Player -> IO ()
+play''' g p | wins O g  = putStrLn "Player O wins!\n"
+            | wins X g  = putStrLn "Player X wins!\n"
+            | full g    = putStrLn "It's a draw!\n"
+            | p == O    = do i <- getNat (prompt p)
+                             case move g i p of
+                                  []   -> do putStrLn "ERROR: Invalid move"
+                                             play''' g p
+                                  [g'] -> play'' g' (next p)
+            | p == X    = do putStr "Player X is thinking... "
+                             play'' (fastest_move g p) (next p)
+
+main' :: IO ()
+main' = do hSetBuffering stdout NoBuffering
+           play'' empty O
 
 
 {- 4. -}
