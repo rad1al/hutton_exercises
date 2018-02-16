@@ -220,8 +220,39 @@ eval xs = case (parse expr xs) of
 {- 7. -}
 -- To be implemented.
 
-{- 8. -}
--- To be implemented.
+{- 8. 
+
+-- a.
+
+expr ::= expr - nat | nat
+nat  ::= 0 | 1 | 2 | ...
+
+-}
+
+-- b.
+
+natural :: Parser Int
+natural = token nat
+
+expr' :: Parser Int
+expr' = do e <- expr
+           do symbol "-"
+              n <- natural
+              return (e-n)
+              <|> return e
+              -- <|> natural -- Not sure if this is correct, based off factor in notes.
+
+-- c.
+-- Since the first thing it does is recursively call itself, the parser will loop forever and never produce a result. 
+
+
+-- d.
+
+expr'' :: Parser Int
+expr'' = do n <- natural
+            ns <- many (do symbol "-"
+                           natural)
+            return $ foldl (-) n ns
 
 {- 9. -}
 -- To be implemented.
